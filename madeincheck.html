@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Made in Check</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --navy: #0a1628;
+    --navy2: #112040;
+    --navy3: #1a2f55;
+    --orange: #ff6b2b;
+    --orange2: #ff8c00;
+    --red: #e63946;
+    --white: #ffffff;
+    --gray: #8892a4;
+    --card: #152236;
+    --border: #1e3a5f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy2), var(--navy3));
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; }
+  .logo span { color: var(--orange); }
+
+  .lang-btn {
+    background: var(--navy3);
+    border: 1px solid var(--border);
+    color: var(--white);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* API KEY */
+  .apikey-section {
+    background: var(--navy2);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .apikey-input {
+    flex: 1;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    color: var(--white);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    outline: none;
+  }
+  .apikey-input::placeholder { color: var(--gray); }
+  .apikey-save {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .apikey-status {
+    font-size: 11px;
+    color: var(--gray);
+    text-align: center;
+    padding: 4px 16px;
+    background: var(--navy2);
+    border-bottom: 1px solid var(--border);
+  }
+  .apikey-status.ok { color: #34d399; }
+
+  .usage-bar {
+    background: var(--navy2);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .usage-info { font-size: 12px; color: var(--gray); }
+  .usage-info strong { color: var(--white); }
+  .usage-dots { display: flex; gap: 5px; align-items: center; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); }
+  .dot.empty { background: var(--border); }
+
+  .disclaimer {
+    background: rgba(230,57,70,0.1);
+    border-left: 3px solid var(--red);
+    margin: 12px 16px;
+    padding: 10px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 11px;
+    color: #ffb3b8;
+    line-height: 1.5;
+  }
+
+  .section { padding: 0 16px 12px; }
+  .section-label { font-size: 13px; color: var(--gray); margin-bottom: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .upload-zone {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:hover { border-color: var(--orange); background: rgba(255,107,43,0.05); }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 44px; margin-bottom: 12px; display: block; }
+  .upload-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .upload-sub { font-size: 12px; color: var(--gray); margin-bottom: 16px; line-height: 1.5; }
+  .upload-btn {
+    background: linear-gradient(135deg, var(--orange), var(--orange2));
+    color: white; border: none; padding: 12px 28px; border-radius: 25px;
+    font-size: 15px; font-weight: 600; cursor: pointer; display: inline-block;
+    transition: transform 0.15s; box-shadow: 0 4px 15px rgba(255,107,43,0.3);
+  }
+  .upload-btn:hover { transform: translateY(-1px); }
+  .upload-note { font-size: 11px; color: var(--gray); margin-top: 12px; }
+
+  .preview-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 12px; display: none; }
+
+  .analyze-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--orange), var(--red));
+    color: white; border: none; padding: 15px; border-radius: 14px;
+    font-size: 16px; font-weight: 700; cursor: pointer; margin: 0 0 16px;
+    transition: all 0.2s; box-shadow: 0 4px 20px rgba(255,107,43,0.35);
+    display: none;
+  }
+  .analyze-btn:hover { transform: translateY(-1px); }
+  .analyze-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .loading { display: none; text-align: center; padding: 24px; background: var(--card); border-radius: 16px; margin-bottom: 16px; }
+  .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--gray); }
+  .loading-sub { font-size: 12px; color: var(--border); margin-top: 4px; }
+
+  .limit-msg { display: none; background: rgba(230,57,70,0.1); border: 1px solid var(--red); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px; }
+  .limit-icon { font-size: 32px; margin-bottom: 8px; }
+  .limit-title { font-size: 15px; font-weight: 700; color: var(--red); margin-bottom: 4px; }
+  .limit-sub { font-size: 12px; color: var(--gray); }
+
+  .result { display: none; background: var(--card); border-radius: 16px; padding: 18px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .result-title { font-size: 15px; font-weight: 700; color: var(--orange); }
+  .result-product { font-size: 12px; color: var(--gray); margin-top: 2px; }
+
+  .origin-bars { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .origin-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .origin-left { display: flex; align-items: center; gap: 8px; }
+  .flag { font-size: 22px; line-height: 1; }
+  .country-name { font-size: 14px; font-weight: 600; }
+  .country-label { font-size: 11px; color: var(--gray); }
+  .pct { font-size: 18px; font-weight: 700; color: var(--orange); font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+  .bar-track { height: 8px; background: var(--navy); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+  .bar-fill.c1 { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .bar-fill.c2 { background: linear-gradient(90deg, #10b981, #34d399); }
+  .bar-fill.c3 { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .bar-fill.c4 { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+  .tip-box { background: rgba(255,107,43,0.08); border: 1px solid rgba(255,107,43,0.2); border-radius: 10px; padding: 12px; font-size: 12px; color: #ffd0b5; line-height: 1.6; }
+  .tip-label { font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+
+  .reset-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--gray); padding: 12px; border-radius: 12px; font-size: 14px; cursor: pointer; margin-bottom: 16px; transition: all 0.2s; }
+  .reset-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--navy2); border-top: 1px solid var(--border); display: flex; z-index: 100; }
+  .nav-item { flex: 1; padding: 10px 5px 14px; text-align: center; cursor: pointer; transition: color 0.2s; color: var(--gray); font-size: 11px; }
+  .nav-item.active { color: var(--orange); }
+  .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+  .spacer { height: 80px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .about-card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .about-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--orange); }
+  .about-text { font-size: 13px; color: var(--gray); line-height: 1.6; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: flex-end; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--navy2); border-radius: 20px 20px 0 0; padding: 20px 16px 30px; width: 100%; max-width: 480px; border-top: 1px solid var(--border); }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+  .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .lang-option { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+  .lang-option:hover, .lang-option.selected { border-color: var(--orange); background: rgba(255,107,43,0.1); color: var(--orange); }
+  .lang-flag { font-size: 24px; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">MADE IN <span>CHECK</span></div>
+  <button class="lang-btn" onclick="showLangModal()">🌐 <span id="langLabel">EN</span> ▾</button>
+</div>
+
+<!-- API KEY -->
+<div class="apikey-section">
+  <input class="apikey-input" type="password" id="apikeyInput" placeholder="Enter Gemini API Key (aistudio.google.com)">
+  <button class="apikey-save" onclick="saveApiKey()">Save</button>
+</div>
+<div class="apikey-status" id="apikeyStatus">🔑 Gemini API Key required</div>
+
+<!-- USAGE BAR -->
+<div class="usage-bar">
+  <div class="usage-info" id="usageInfo"><strong>Today's Free Scans</strong> · 3 remaining</div>
+  <div class="usage-dots">
+    <div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+  </div>
+</div>
+
+<!-- ANALYZE PANEL -->
+<div class="panel active" id="analyzePanel">
+  <div class="disclaimer" id="disclaimerText">
+    ⚠️ AI reference only · Not legally binding · Not 100% accurate · Verify with official retailer
+  </div>
+
+
+  <div class="section">
+    <div class="section-label" id="uploadLabel">Photo Upload</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+      <img class="preview-img" id="previewImg" alt="preview">
+      <span class="upload-icon" id="uploadIcon">📷</span>
+      <div class="upload-title" id="uploadTitle">Take or Upload a Photo</div>
+      <div class="upload-sub" id="uploadSub">Products · Food · Vegetables · Fruits<br>Logo helps accuracy</div>
+      <button class="upload-btn" id="uploadBtnLabel">Select Photo</button>
+      <div class="upload-note" id="uploadNote">📵 Photos used for AI analysis only · Not stored</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">🔍 Analyze Origin</button>
+
+    <div class="loading" id="loadingDiv">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">AI analyzing origin...</div>
+      <div class="loading-sub" id="loadingSubText">Approx. 5~15 seconds</div>
+    </div>
+
+    <div class="limit-msg" id="limitMsg">
+      <div class="limit-icon">🚫</div>
+      <div class="limit-title" id="limitTitle">Daily Limit Reached</div>
+      <div class="limit-sub" id="limitSub">Free: 3 scans/day · Come back tomorrow!</div>
+    </div>
+
+    <div class="result" id="resultDiv">
+      <div class="result-header">
+        <div>
+          <div class="result-title" id="resultTitle">🔍 Origin Analysis</div>
+          <div class="result-product" id="resultProduct"></div>
+        </div>
+      </div>
+      <div class="origin-bars" id="originBars"></div>
+      <div class="tip-box">
+        <div class="tip-label">💡 AI Insight</div>
+        <div id="tipText"></div>
+      </div>
+    </div>
+
+    <button class="reset-btn" id="resetBtn" onclick="resetApp()" style="display:none">↩ Scan Another Item</button>
+  </div>
+</div>
+
+<!-- ABOUT PANEL -->
+<div class="panel" id="aboutPanel">
+  <div style="padding:16px">
+    <div class="about-card">
+      <div class="about-title">📱 Made in Check</div>
+      <div class="about-text">AI-powered origin detection for food, products, vegetables & fruits. Upload a photo and instantly see where it was likely made.</div>
+    </div>
+    <div class="about-card">
+      <div class="about-title">📊 How It Works</div>
+      <div class="about-text">• Upload photo of product or food<br>• AI analyzes packaging, labels & appearance<br>• Shows 4 independent country probability bars<br>• Based on AI analysis + news reports</div>
+    </div>
+    <div class="about-card">
+      <div class="about-title">🆓 Free Plan</div>
+      <div class="about-text">3 scans per day · Free forever<br><br>Results are AI-generated estimates for reference only. Not 100% accurate.</div>
+    </div>
+    <div class="about-card">
+      <div class="about-title">⚠️ Disclaimer</div>
+      <div class="about-text">AI-generated origin estimates for informational purposes only. Not legally binding. Accuracy cannot be guaranteed. Verify with official product labeling.</div>
+    </div>
+    <div style="text-align:center;color:var(--gray);font-size:12px;padding:8px 0">Version 1.0.0</div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-analyze" onclick="showPanel('analyze')">
+    <span class="nav-icon">🔍</span>
+    <span id="nav1">Analyze</span>
+  </div>
+  <div class="nav-item" id="nav-about" onclick="showPanel('about')">
+    <span class="nav-icon">ℹ️</span>
+    <span id="nav2">About</span>
+  </div>
+</div>
+
+<!-- LANG MODAL -->
+<div class="modal-overlay" id="langModal">
+  <div class="modal">
+    <div class="modal-title" id="langModalTitle">Select Language</div>
+    <div class="lang-grid">
+      <div class="lang-option selected" onclick="setLang('en')"><span class="lang-flag">🇺🇸</span>English</div>
+      <div class="lang-option" onclick="setLang('ko')"><span class="lang-flag">🇰🇷</span>한국어</div>
+      <div class="lang-option" onclick="setLang('ja')"><span class="lang-flag">🇯🇵</span>日本語</div>
+      <div class="lang-option" onclick="setLang('es')"><span class="lang-flag">🇪🇸</span>Español</div>
+      <div class="lang-option" onclick="setLang('th')"><span class="lang-flag">🇹🇭</span>ภาษาไทย</div>
+      <div class="lang-option" onclick="setLang('zh')"><span class="lang-flag">🇨🇳</span>中文</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const GEMINI_MODEL = 'gemini-3.1-flash-lite';
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+const LANG = {
+  en: {
+    label:"EN",
+    disclaimer:"⚠️ AI reference only · Not legally binding · Not 100% accurate · Verify with official retailer",
+    uploadLabel:"Photo Upload", uploadTitle:"Take or Upload a Photo",
+    uploadSub:"Products · Food · Vegetables · Fruits\nLogo helps accuracy",
+    uploadBtnLabel:"Select Photo", uploadNote:"📵 Photos used for AI analysis only · Not stored",
+    analyzeBtn:"🔍 Analyze Origin", loadingText:"AI analyzing origin...", loadingSubText:"Approx. 5~15 seconds",
+    limitTitle:"Daily Limit Reached", limitSub:"Free: 3 scans/day · Come back tomorrow!",
+    resultTitle:"🔍 Origin Analysis", resetBtn:"↩ Scan Another Item",
+    usageInfo:"Today's Free Scans", remaining:"remaining",
+    nav1:"Analyze", nav2:"About", langModalTitle:"Select Language",
+    country:"United States", neighbors:["Canada","Mexico"],
+    prompt:`You are an AI origin detector. Analyze this product/food/vegetable/fruit photo.
+
+User country: United States
+Neighbor 1: Canada
+Neighbor 2: Mexico
+
+Return ONLY valid JSON, no markdown:
+{
+  "product": "detected product name",
+  "bars": [
+    {"flag":"🇺🇸","country":"United States","label":"Home Country","pct":10},
+    {"flag":"🇨🇦","country":"Canada","label":"Neighbor 1","pct":15},
+    {"flag":"🇲🇽","country":"Mexico","label":"Neighbor 2","pct":8},
+    {"flag":"🇨🇳","country":"China","label":"China","pct":70}
+  ],
+  "tip":"One sentence insight about this product origin based on AI analysis and news."
+}
+Rules: bar[3] always China fixed last. Each bar is INDEPENDENT probability. tip in English. JSON only.`
+  },
+  ko: {
+    label:"KO",
+    disclaimer:"⚠️ AI 참고용 · 법적 효력 없음 · 100% 정확하지 않음 · 공식 판매처에서 확인",
+    uploadLabel:"사진 업로드", uploadTitle:"사진을 찍거나 업로드하세요",
+    uploadSub:"상품 · 식품 · 채소 · 과일\n로고를 찍으면 더 정확해요",
+    uploadBtnLabel:"사진 선택", uploadNote:"📵 사진은 AI 분석 목적으로만 사용되며 저장되지 않습니다",
+    analyzeBtn:"🔍 원산지 분석", loadingText:"AI가 원산지를 분석 중...", loadingSubText:"약 5~15초 소요됩니다",
+    limitTitle:"일일 한도 초과", limitSub:"무료: 하루 3회 · 내일 다시 이용하세요!",
+    resultTitle:"🔍 원산지 분석 결과", resetBtn:"↩ 다른 상품 분석하기",
+    usageInfo:"오늘 무료 검사", remaining:"회 남음",
+    nav1:"분석", nav2:"앱 정보", langModalTitle:"언어 선택",
+    country:"대한민국", neighbors:["일본","중국"],
+    prompt:`당신은 AI 원산지 감별기입니다. 업로드된 상품/식품/채소/과일 사진을 분석하세요.
+
+사용자 국가: 대한민국
+주변국 1: 일본
+주변국 2: 중국
+
+반드시 유효한 JSON만 반환, 마크다운 없이:
+{
+  "product": "감별된 상품명",
+  "bars": [
+    {"flag":"🇰🇷","country":"대한민국","label":"자국","pct":75},
+    {"flag":"🇯🇵","country":"일본","label":"주변국 1","pct":10},
+    {"flag":"🇨🇳","country":"중국","label":"주변국 2","pct":5},
+    {"flag":"🇨🇳","country":"중국","label":"중국","pct":5}
+  ],
+  "tip":"이 상품 원산지에 대한 AI 분석 및 언론 보도 기반 한 줄 설명."
+}
+규칙: bar[3]는 항상 중국 고정. 각 수치바는 독립 확률. tip은 한국어. JSON만 반환.`
+  },
+  ja: {
+    label:"JA",
+    disclaimer:"⚠️ AI参考のみ · 法的効力なし · 100%正確ではない · 公式販売店で確認",
+    uploadLabel:"写真アップロード", uploadTitle:"写真を撮るかアップロード",
+    uploadSub:"商品 · 食品 · 野菜 · 果物\nロゴで精度向上",
+    uploadBtnLabel:"写真を選択", uploadNote:"📵 写真はAI分析のみ使用・保存しません",
+    analyzeBtn:"🔍 原産地を分析", loadingText:"AI原産地分析中...", loadingSubText:"約5〜15秒",
+    limitTitle:"1日の上限に達しました", limitSub:"無料：1日3回 · 明日また利用してください",
+    resultTitle:"🔍 原産地分析結果", resetBtn:"↩ 別の商品を分析",
+    usageInfo:"本日の無料スキャン", remaining:"回残り",
+    nav1:"分析", nav2:"について", langModalTitle:"言語を選択",
+    country:"日本", neighbors:["韓国","台湾"],
+    prompt:`あなたはAI原産地検出器です。商品/食品/野菜/果物の写真を分析してください。
+
+ユーザー国: 日本 / 近隣1: 韓国 / 近隣2: 台湾
+
+有効なJSONのみ返してください:
+{
+  "product": "検出された商品名",
+  "bars": [
+    {"flag":"🇯🇵","country":"日本","label":"自国","pct":60},
+    {"flag":"🇰🇷","country":"韓国","label":"近隣1","pct":15},
+    {"flag":"🇹🇼","country":"台湾","label":"近隣2","pct":10},
+    {"flag":"🇨🇳","country":"中国","label":"中国","pct":25}
+  ],
+  "tip":"この商品の原産地についての一言説明。"
+}
+ルール: bar[3]常に中国固定。独立確率。tipは日本語。JSONのみ。`
+  },
+  es: {
+    label:"ES",
+    disclaimer:"⚠️ Solo referencia IA · Sin valor legal · No 100% preciso · Verifique con minorista oficial",
+    uploadLabel:"Subir Foto", uploadTitle:"Toma o sube una foto",
+    uploadSub:"Productos · Alimentos · Verduras · Frutas\nEl logo mejora precisión",
+    uploadBtnLabel:"Seleccionar Foto", uploadNote:"📵 Fotos solo para análisis IA · No almacenadas",
+    analyzeBtn:"🔍 Analizar Origen", loadingText:"IA analizando origen...", loadingSubText:"Aprox. 5~15 segundos",
+    limitTitle:"Límite Diario Alcanzado", limitSub:"Gratis: 3/día · ¡Vuelve mañana!",
+    resultTitle:"🔍 Análisis de Origen", resetBtn:"↩ Escanear Otro",
+    usageInfo:"Escaneos Gratis Hoy", remaining:"restantes",
+    nav1:"Analizar", nav2:"Acerca de", langModalTitle:"Seleccionar Idioma",
+    country:"España", neighbors:["Francia","Portugal"],
+    prompt:`Eres detector de origen IA. Analiza foto de producto/alimento/verdura/fruta.
+
+País usuario: España / Vecino1: Francia / Vecino2: Portugal
+
+Solo JSON válido:
+{
+  "product": "nombre del producto",
+  "bars": [
+    {"flag":"🇪🇸","country":"España","label":"País Inicio","pct":20},
+    {"flag":"🇫🇷","country":"Francia","label":"Vecino 1","pct":15},
+    {"flag":"🇵🇹","country":"Portugal","label":"Vecino 2","pct":10},
+    {"flag":"🇨🇳","country":"China","label":"China","pct":60}
+  ],
+  "tip":"Una frase sobre el origen probable del producto."
+}
+Reglas: bar[3] siempre China. Probabilidades independientes. tip en español.`
+  },
+  th: {
+    label:"TH",
+    disclaimer:"⚠️ เพื่อการอ้างอิง AI เท่านั้น · ไม่มีผลทางกฎหมาย · ตรวจสอบกับผู้ขายอย่างเป็นทางการ",
+    uploadLabel:"อัปโหลดรูปภาพ", uploadTitle:"ถ่ายหรืออัปโหลดรูปภาพ",
+    uploadSub:"สินค้า · อาหาร · ผัก · ผลไม้\nโลโก้ช่วยให้แม่นยำ",
+    uploadBtnLabel:"เลือกรูปภาพ", uploadNote:"📵 รูปภาพใช้เพื่อ AI เท่านั้น · ไม่จัดเก็บ",
+    analyzeBtn:"🔍 วิเคราะห์แหล่งกำเนิด", loadingText:"AI กำลังวิเคราะห์...", loadingSubText:"ประมาณ 5~15 วินาที",
+    limitTitle:"ถึงขีดจำกัดรายวัน", limitSub:"ฟรี: 3 ครั้ง/วัน · กลับมาพรุ่งนี้!",
+    resultTitle:"🔍 ผลการวิเคราะห์", resetBtn:"↩ สแกนสินค้าอื่น",
+    usageInfo:"การสแกนฟรีวันนี้", remaining:"ครั้งที่เหลือ",
+    nav1:"วิเคราะห์", nav2:"เกี่ยวกับ", langModalTitle:"เลือกภาษา",
+    country:"ไทย", neighbors:["เวียดนาม","มาเลเซีย"],
+    prompt:`คุณคือเครื่องตรวจจับแหล่งกำเนิด AI วิเคราะห์ภาพสินค้า/อาหาร/ผัก/ผลไม้
+
+ประเทศผู้ใช้: ไทย / เพื่อนบ้าน1: เวียดนาม / เพื่อนบ้าน2: มาเลเซีย
+
+ตอบ JSON เท่านั้น:
+{
+  "product": "ชื่อสินค้า",
+  "bars": [
+    {"flag":"🇹🇭","country":"ไทย","label":"ประเทศบ้านเกิด","pct":40},
+    {"flag":"🇻🇳","country":"เวียดนาม","label":"เพื่อนบ้าน 1","pct":15},
+    {"flag":"🇲🇾","country":"มาเลเซีย","label":"เพื่อนบ้าน 2","pct":10},
+    {"flag":"🇨🇳","country":"จีน","label":"จีน","pct":55}
+  ],
+  "tip":"ประโยคเดียวเกี่ยวกับแหล่งกำเนิดสินค้า"
+}
+กฎ: bar[3] จีนเสมอ. ความน่าจะเป็นอิสระ. tip ภาษาไทย.`
+  },
+  zh: {
+    label:"ZH",
+    disclaimer:"⚠️ 仅供AI参考 · 无法律效力 · 非100%准确 · 请向官方核实",
+    uploadLabel:"上传照片", uploadTitle:"拍照或上传照片",
+    uploadSub:"商品 · 食品 · 蔬菜 · 水果\n标志可提高准确度",
+    uploadBtnLabel:"选择照片", uploadNote:"📵 照片仅用于AI分析 · 不存储",
+    analyzeBtn:"🔍 分析产地", loadingText:"AI正在分析产地...", loadingSubText:"约需5~15秒",
+    limitTitle:"已达每日上限", limitSub:"免费：每天3次 · 明天再来！",
+    resultTitle:"🔍 产地分析结果", resetBtn:"↩ 扫描其他商品",
+    usageInfo:"今日免费扫描", remaining:"次剩余",
+    nav1:"分析", nav2:"关于", langModalTitle:"选择语言",
+    country:"中国", neighbors:["韩国","日本"],
+    prompt:`你是AI产地检测器。分析商品/食品/蔬菜/水果照片。
+
+用户国家: 中国 / 邻国1: 韩国 / 邻国2: 日本
+
+仅返回有效JSON:
+{
+  "product": "商品名称",
+  "bars": [
+    {"flag":"🇨🇳","country":"中国","label":"本国","pct":80},
+    {"flag":"🇰🇷","country":"韩国","label":"邻国1","pct":10},
+    {"flag":"🇯🇵","country":"日本","label":"邻国2","pct":8},
+    {"flag":"🇨🇳","country":"中国","label":"中国","pct":80}
+  ],
+  "tip":"关于该商品可能产地的一句话说明。"
+}
+规则: bar[3]始终中国固定。独立概率。tip中文。仅JSON。`
+  }
+};
+
+let currentLang = 'en';
+let selectedFile = null;
+let usageCount = 0;
+let usageDate = '';
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function checkUsageReset() {
+  const stored = localStorage.getItem('mic_date') || '';
+  if (stored !== todayStr()) {
+    usageCount = 0;
+    usageDate = todayStr();
+    localStorage.setItem('mic_usage','0');
+    localStorage.setItem('mic_date', usageDate);
+  } else {
+    usageCount = parseInt(localStorage.getItem('mic_usage') || '0');
+  }
+}
+
+function updateUsageUI() {
+  const L = LANG[currentLang];
+  const rem = Math.max(0, 3 - usageCount);
+  document.getElementById('usageInfo').innerHTML = `<strong>${L.usageInfo}</strong> · ${rem} ${L.remaining}`;
+  ['d1','d2','d3'].forEach((id,i) => {
+    document.getElementById(id).className = 'dot' + (i < rem ? '' : ' empty');
+  });
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apikeyInput').value.trim();
+  if (!key) return;
+  localStorage.setItem('mic_apikey', key);
+  document.getElementById('apikeyInput').value = '';
+  document.getElementById('apikeyStatus').textContent = '✅ API Key saved!';
+  document.getElementById('apikeyStatus').className = 'apikey-status ok';
+  setTimeout(() => {
+    document.getElementById('apikeyStatus').textContent = '✅ Gemini API Key connected';
+    document.getElementById('apikeyStatus').className = 'apikey-status ok';
+  }, 2000);
+}
+
+function getApiKey() { return localStorage.getItem('mic_apikey') || ''; }
+
+function applyLang(lang) {
+  const L = LANG[lang];
+  const ids = ['uploadLabel','uploadTitle','uploadSub','uploadBtnLabel',
+    'uploadNote','analyzeBtn','loadingText','loadingSubText','limitTitle','limitSub',
+    'resultTitle','resetBtn','nav1','nav2','langModalTitle'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = L[id] || '';
+  });
+  document.getElementById('disclaimerText').textContent = L.disclaimer || '';
+  document.getElementById('langLabel').textContent = L.label;
+  updateUsageUI();
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-option').forEach((el,i) => {
+    el.classList.toggle('selected', ['en','ko','ja','es','th','zh'][i] === lang);
+  });
+  applyLang(lang);
+  document.getElementById('langModal').classList.remove('show');
+}
+
+function showLangModal() { document.getElementById('langModal').classList.add('show'); }
+document.getElementById('langModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
+
+function showPanel(name) {
+  ['analyze','about'].forEach(p => {
+    document.getElementById(p+'Panel').classList.toggle('active', p === name);
+    document.getElementById('nav-'+p).classList.toggle('active', p === name);
+  });
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { alert('Image must be under 5MB'); return; }
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('previewImg');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    ['uploadIcon','uploadTitle','uploadSub','uploadBtnLabel','uploadNote'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById('analyzeBtn').style.display = 'block';
+    document.getElementById('resultDiv').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'none';
+    document.getElementById('limitMsg').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function compressImage(file) {
+  return new Promise(res => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > 1024 || h > 1024) {
+          if (w > h) { h = Math.round(h*1024/w); w = 1024; }
+          else { w = Math.round(w*1024/h); h = 1024; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(canvas.toDataURL('image/jpeg', 0.82).split(',')[1]);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function analyze() {
+  checkUsageReset();
+  if (usageCount >= 3) {
+    document.getElementById('limitMsg').style.display = 'block';
+    document.getElementById('analyzeBtn').style.display = 'none';
+    return;
+  }
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    alert('Please enter your Gemini API Key first!');
+    return;
+  }
+  if (!selectedFile) return;
+
+  const L = LANG[currentLang];
+  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('loadingDiv').style.display = 'block';
+  document.getElementById('resultDiv').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'none';
+
+  try {
+    const b64 = await compressImage(selectedFile);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    const resp = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: 'image/jpeg', data: b64 } },
+            { text: L.prompt }
+          ]
+        }],
+        generationConfig: { maxOutputTokens: 1000, temperature: 0.3, responseMimeType: "application/json" }
+      })
+    });
+
+    clearTimeout(timeout);
+    const data = await resp.json();
+
+    if (data.error) throw new Error(data.error.message);
+
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+
+    usageCount++;
+    localStorage.setItem('mic_usage', usageCount);
+    updateUsageUI();
+    showResult(parsed);
+
+  } catch(err) {
+    document.getElementById('loadingDiv').style.display = 'none';
+    document.getElementById('analyzeBtn').style.display = 'block';
+    if (err.name === 'AbortError') alert('Request timed out. Please try again.');
+    else alert('Analysis failed: ' + err.message);
+  }
+}
+
+function showResult(data) {
+  document.getElementById('loadingDiv').style.display = 'none';
+  document.getElementById('resultProduct').textContent = data.product || '';
+  document.getElementById('tipText').textContent = data.tip || '';
+
+  const barsEl = document.getElementById('originBars');
+  barsEl.innerHTML = '';
+  const colors = ['c1','c2','c3','c4'];
+
+  (data.bars || []).forEach((bar, i) => {
+    const el = document.createElement('div');
+    el.className = 'origin-item';
+    el.innerHTML = `
+      <div class="origin-top">
+        <div class="origin-left">
+          <span class="flag">${bar.flag}</span>
+          <div>
+            <div class="country-name">${bar.country}</div>
+            <div class="country-label">${bar.label}</div>
+          </div>
+        </div>
+        <div class="pct">${bar.pct}%</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill ${colors[i]}" data-pct="${bar.pct}"></div></div>
+    `;
+    barsEl.appendChild(el);
+  });
+
+  document.getElementById('resultDiv').style.display = 'block';
+  document.getElementById('resetBtn').style.display = 'block';
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
+  }, 100);
+}
+
+function resetApp() {
+  selectedFile = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('previewImg').style.display = 'none';
+  ['uploadIcon','uploadTitle','uploadSub','uploadBtnLabel','uploadNote'].forEach(id => {
+    document.getElementById(id).style.display = '';
+  });
+  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('resultDiv').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('limitMsg').style.display = 'none';
+}
+
+// Init
+checkUsageReset();
+const savedKey = getApiKey();
+if (savedKey) {
+  document.getElementById('apikeyStatus').textContent = '✅ Gemini API Key connected';
+  document.getElementById('apikeyStatus').className = 'apikey-status ok';
+}
+updateUsageUI();
+</script>
+</body>
+</html>

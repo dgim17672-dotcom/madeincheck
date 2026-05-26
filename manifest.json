@@ -1,0 +1,18 @@
+{
+  "name": "Made in Check",
+  "short_name": "MadeInCheck",
+  "description": "AI-powered product origin detector. Upload a photo to check where your food or product was made.",
+  "start_url": "/madeincheck/madeincheck.html",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
