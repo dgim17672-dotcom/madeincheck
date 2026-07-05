@@ -679,7 +679,7 @@ async function analyze() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
 
-    const resp = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const resp = await fetch(`https://madeincheck-proxy.dgim17672.workers.dev/?model=${GEMINI_MODEL}`, {
       method: 'POST',
       signal: controller.signal,
       headers: { 'Content-Type': 'application/json' },
