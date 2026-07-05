@@ -571,19 +571,10 @@ function updateUsageUI() {
 }
 
 function saveApiKey() {
-  const key = document.getElementById('apikeyInput').value.trim();
-  if (!key) return;
-  localStorage.setItem('mic_apikey', key);
-  document.getElementById('apikeyInput').value = '';
-  document.getElementById('apikeyStatus').textContent = '✅ API Key saved!';
-  document.getElementById('apikeyStatus').className = 'apikey-status ok';
-  setTimeout(() => {
-    document.getElementById('apikeyStatus').textContent = '✅ Gemini API Key connected';
-    document.getElementById('apikeyStatus').className = 'apikey-status ok';
-  }, 2000);
-}
+        // API key input is no longer used; requests go through the proxy server.
+      }
 
-function getApiKey() { return localStorage.getItem('mic_apikey') || ''; }
+      function getApiKey() { return 'proxy'; }
 
 function applyLang(lang) {
   const L = LANG[lang];
