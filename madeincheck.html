@@ -374,24 +374,27 @@ const LANG = {
     usageInfo:"Today's Free Scans", remaining:"remaining",
     nav1:"Analyze", nav2:"About", langModalTitle:"Select Language",
     country:"United States", neighbors:["Canada","Mexico"],
-    prompt:`You are an AI origin detector. Analyze this product/food/vegetable/fruit photo.
+    prompt:`You are an AI origin detector. Analyze the packaging, label, brand logo, and visual features in this product/food/vegetable/fruit photo to estimate origin probabilities.
 
 User country: United States
 Neighbor 1: Canada
 Neighbor 2: Mexico
 
-Return ONLY valid JSON, no markdown:
+Return ONLY valid JSON, no markdown or explanation:
 {
-  "product": "detected product name",
+  "product": "specific product or food type detected in the photo",
   "bars": [
-    {"flag":"🇺🇸","country":"United States","label":"Home Country","pct":10},
-    {"flag":"🇨🇦","country":"Canada","label":"Neighbor 1","pct":15},
-    {"flag":"🇲🇽","country":"Mexico","label":"Neighbor 2","pct":8},
-    {"flag":"🇨🇳","country":"China","label":"China","pct":70}
+    {"flag":"US","country":"United States","label":"Home Country","pct": actual_analyzed_probability_number},
+    {"flag":"CA","country":"Canada","label":"Neighbor 1","pct": actual_analyzed_probability_number},
+    {"flag":"MX","country":"Mexico","label":"Neighbor 2","pct": actual_analyzed_probability_number},
+    {"flag":"CN","country":"China","label":"China","pct": actual_analyzed_probability_number}
   ],
-  "tip":"One sentence insight about this product origin based on AI analysis and news."
+  "tip":"One sentence insight about this product's likely origin based on packaging/brand evidence."
 }
-Rules: bar[3] always China fixed last. Each bar is INDEPENDENT probability. tip in English. JSON only.`
+Rules:
+1. 'pct' must be a plain number (0-100), not a string or fixed value.
+2. Each country's percentage must be an independently inferred probability based on actual visual evidence in the photo (language, barcode, logo, etc.) — do not use example numbers.
+3. Do not alter the JSON structure.`,
   },
   ko: {
     label:"KO",
