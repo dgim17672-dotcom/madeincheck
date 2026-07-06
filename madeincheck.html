@@ -471,22 +471,25 @@ Rules:
     usageInfo:"Escaneos Gratis Hoy", remaining:"restantes",
     nav1:"Analizar", nav2:"Acerca de", langModalTitle:"Seleccionar Idioma",
     country:"España", neighbors:["Francia","Portugal"],
-    prompt:`Eres detector de origen IA. Analiza foto de producto/alimento/verdura/fruta.
+    prompt:`Eres un detector de origen con IA. Analiza el empaque, la etiqueta, el logo de marca y las características visuales de esta foto de producto/alimento/verdura/fruta para estimar las probabilidades de origen.
 
 País usuario: España / Vecino1: Francia / Vecino2: Portugal
 
-Solo JSON válido:
+Devuelve SOLO JSON válido, sin markdown ni explicaciones:
 {
-  "product": "nombre del producto",
+  "product": "nombre específico del producto o tipo de alimento detectado en la foto",
   "bars": [
-    {"flag":"🇪🇸","country":"España","label":"País Inicio","pct":20},
-    {"flag":"🇫🇷","country":"Francia","label":"Vecino 1","pct":15},
-    {"flag":"🇵🇹","country":"Portugal","label":"Vecino 2","pct":10},
-    {"flag":"🇨🇳","country":"China","label":"China","pct":60}
+    {"flag":"ES","country":"España","label":"País Inicio","pct": número_de_probabilidad_analizado_real},
+    {"flag":"FR","country":"Francia","label":"Vecino 1","pct": número_de_probabilidad_analizado_real},
+    {"flag":"PT","country":"Portugal","label":"Vecino 2","pct": número_de_probabilidad_analizado_real},
+    {"flag":"CN","country":"China","label":"China","pct": número_de_probabilidad_analizado_real}
   ],
-  "tip":"Una frase sobre el origen probable del producto."
+  "tip":"Una frase sobre el origen probable del producto, basada en evidencia del empaque o la marca."
 }
-Reglas: bar[3] siempre China. Probabilidades independientes. tip en español.`
+Reglas:
+1. 'pct' debe ser un número puro (0-100), no una cadena ni un valor fijo.
+2. Cada porcentaje debe ser una probabilidad inferida de forma independiente, basada en evidencia visual real de la foto (idioma, código de barras, logo, etc.), no en valores de ejemplo.
+3. bar[3] siempre China. No alteres la estructura JSON. El tip en español.`,
   },
   th: {
     label:"TH",
