@@ -200,6 +200,8 @@
 
   .tip-box { background: rgba(255,107,43,0.08); border: 1px solid rgba(255,107,43,0.2); border-radius: 10px; padding: 12px; font-size: 12px; color: #ffd0b5; line-height: 1.6; }
   .tip-label { font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .low-confidence-badge { display:none; align-items:flex-start; gap:8px; background: rgba(255,193,7,0.12); border: 1px solid rgba(255,193,7,0.4); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #ffe4a3; line-height: 1.5; margin-bottom: 10px; }
+  .low-confidence-badge.show { display:flex; }
 
   .reset-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--gray); padding: 12px; border-radius: 12px; font-size: 14px; cursor: pointer; margin-bottom: 16px; transition: all 0.2s; }
   .reset-btn:hover { border-color: var(--orange); color: var(--orange); }
@@ -294,6 +296,9 @@
           <div class="result-product" id="resultProduct"></div>
         </div>
       </div>
+      <div class="low-confidence-badge" id="lowConfBadge">
+        <span>⚠️</span><span id="lowConfText"></span>
+      </div>
       <div class="origin-bars" id="originBars"></div>
       <div class="tip-box">
         <div class="tip-label">💡 AI Insight</div>
@@ -373,6 +378,7 @@ const LANG = {
     resultTitle:"🔍 Origin Analysis", resetBtn:"↩ Scan Another Item",
     usageInfo:"Today's Free Scans", remaining:"remaining",
     nav1:"Analyze", nav2:"About", langModalTitle:"Select Language",
+    lowConfidenceMsg:"⚠️ No clear origin label, barcode, or text visible in this photo. This result is a rough guess, not a reliable analysis.",
     country:"United States", neighbors:["Canada","Mexico"],
     prompt:`You are an AI origin detector. Analyze the packaging, label, brand logo, and visual features in this product/food/vegetable/fruit photo to estimate origin probabilities.
 
@@ -383,6 +389,7 @@ Neighbor 2: Mexico
 Return ONLY valid JSON, no markdown or explanation:
 {
   "product": "specific product or food type detected in the photo",
+  "confidence": "HIGH or LOW",
   "bars": [
     {"flag":"US","country":"United States","label":"Home Country","pct": actual_analyzed_probability_number},
     {"flag":"CA","country":"Canada","label":"Neighbor 1","pct": actual_analyzed_probability_number},
@@ -394,7 +401,9 @@ Return ONLY valid JSON, no markdown or explanation:
 Rules:
 1. 'pct' must be a plain number (0-100), not a string or fixed value.
 2. Each country's percentage must be an independently inferred probability based on actual visual evidence in the photo (language, barcode, logo, etc.) — do not use example numbers.
-3. Do not alter the JSON structure.`,
+3. Set "confidence" to "LOW" if the photo shows NO readable text, barcode, logo, or origin marking — in that case keep percentages modest (avoid extreme values like 85%) and say in the tip that there is no visible evidence, this is only a rough guess.
+4. Set "confidence" to "HIGH" only if you can point to specific visible evidence (text, barcode, logo, packaging style) that justifies the numbers.
+5. Do not alter the JSON structure.`,
   },
   ko: {
     label:"KO",
@@ -407,6 +416,7 @@ Rules:
     resultTitle:"🔍 원산지 분석 결과", resetBtn:"↩ 다른 상품 분석하기",
     usageInfo:"오늘 무료 검사", remaining:"회 남음",
     nav1:"분석", nav2:"앱 정보", langModalTitle:"언어 선택",
+    lowConfidenceMsg:"⚠️ 사진에서 원산지 라벨, 바코드, 텍스트가 명확히 보이지 않습니다. 이 결과는 신뢰할 수 있는 분석이 아니라 대략적인 추정치입니다.",
     country:"대한민국", neighbors:["일본","중국"],
     prompt:`당신은 AI 원산지 감별기입니다. 업로드된 상품/식품/채소/과일 사진을 분석하세요.
 
@@ -417,6 +427,7 @@ Rules:
 반드시 유효한 JSON만 반환, 마크다운 없이:
 {
   "product": "감별된 상품명",
+  "confidence": "HIGH 또는 LOW",
   "bars": [
     {"flag":"🇰🇷","country":"대한민국","label":"자국","pct":75},
     {"flag":"🇯🇵","country":"일본","label":"주변국 1","pct":10},
@@ -425,7 +436,11 @@ Rules:
   ],
   "tip":"이 상품 원산지에 대한 AI 분석 및 언론 보도 기반 한 줄 설명."
 }
-규칙: bar[3]는 항상 중국 고정. 각 수치바는 독립 확률. tip은 한국어. JSON만 반환.`
+규칙:
+1. bar[3]는 항상 중국 고정. 각 수치바는 독립 확률. 예시 숫자를 그대로 베끼지 말고 실제 사진 증거(문구, 바코드, 로고 등)를 기반으로 계산할 것.
+2. 사진에서 읽을 수 있는 텍스트, 바코드, 로고, 원산지 표시가 전혀 안 보이면 "confidence"를 "LOW"로 설정하고, 수치를 85% 같은 극단값 대신 중간 수준으로 낮춰서 표시할 것. tip에는 "명확한 증거가 보이지 않아 추정치임"을 명시할 것.
+3. 근거가 될 구체적 증거(텍스트, 바코드, 로고, 포장 스타일 등)를 실제로 짚을 수 있을 때만 "confidence"를 "HIGH"로 설정할 것.
+4. tip은 한국어. JSON만 반환.`
   },
   ja: {
     label:"JA",
@@ -438,6 +453,7 @@ Rules:
     resultTitle:"🔍 原産地分析結果", resetBtn:"↩ 別の商品を分析",
     usageInfo:"本日の無料スキャン", remaining:"回残り",
     nav1:"分析", nav2:"について", langModalTitle:"言語を選択",
+    lowConfidenceMsg:"⚠️ この写真には原産地ラベル、バーコード、文字がはっきり見えません。この結果は信頼できる分析ではなく、大まかな推測です。",
     country:"日本", neighbors:["韓国","台湾"],
    prompt:`あなたはAI原産地検出器です。写真に写ったパッケージ、ラベル、ブランドロゴ、外観の特徴を分析し、生産・製造原産地の確率を推定してください。
 
@@ -446,6 +462,7 @@ Rules:
 有効なJSONのみ返してください（マークダウンや説明文は不要）：
 {
   "product": "写真から検出された具体的な商品名または食品の種類",
+  "confidence": "HIGH または LOW",
   "bars": [
     {"flag":"JP","country":"日本","label":"自国","pct": 実際に分析された確率の数値},
     {"flag":"KR","country":"韓国","label":"近隣1","pct": 実際に分析された確率の数値},
@@ -457,7 +474,9 @@ Rules:
 ルール：
 1. 'pct' は文字列ではなく純粋な数値（0〜100）にすること。
 2. 各国の数値は固定値を使わず、写真の視覚的証拠（言語、バーコード、ロゴなど）に基づいて独立して推論された実際の確率を入力すること。
-3. bar[3]は常に中国固定。JSON構造を壊さないこと。tipは日本語で。`,
+3. 写真に読み取れる文字、バーコード、ロゴ、原産地表示が全く見えない場合は"confidence"を"LOW"に設定し、数値は85%のような極端な値を避けて控えめにすること。tipには「明確な証拠が見えないため推測である」旨を明記すること。
+4. 具体的な根拠（文字、バーコード、ロゴ、パッケージの様式など）を指摘できる場合のみ"confidence"を"HIGH"に設定すること。
+5. bar[3]は常に中国固定。JSON構造を壊さないこと。tipは日本語で。`,
   },
   es: {
     label:"ES",
@@ -470,6 +489,7 @@ Rules:
     resultTitle:"🔍 Análisis de Origen", resetBtn:"↩ Escanear Otro",
     usageInfo:"Escaneos Gratis Hoy", remaining:"restantes",
     nav1:"Analizar", nav2:"Acerca de", langModalTitle:"Seleccionar Idioma",
+    lowConfidenceMsg:"⚠️ No se ve ninguna etiqueta de origen, código de barras o texto claro en esta foto. Este resultado es una estimación aproximada, no un análisis fiable.",
     country:"España", neighbors:["Francia","Portugal"],
     prompt:`Eres un detector de origen con IA. Analiza el empaque, la etiqueta, el logo de marca y las características visuales de esta foto de producto/alimento/verdura/fruta para estimar las probabilidades de origen.
 
@@ -478,6 +498,7 @@ País usuario: España / Vecino1: Francia / Vecino2: Portugal
 Devuelve SOLO JSON válido, sin markdown ni explicaciones:
 {
   "product": "nombre específico del producto o tipo de alimento detectado en la foto",
+  "confidence": "HIGH o LOW",
   "bars": [
     {"flag":"ES","country":"España","label":"País Inicio","pct": número_de_probabilidad_analizado_real},
     {"flag":"FR","country":"Francia","label":"Vecino 1","pct": número_de_probabilidad_analizado_real},
@@ -489,7 +510,9 @@ Devuelve SOLO JSON válido, sin markdown ni explicaciones:
 Reglas:
 1. 'pct' debe ser un número puro (0-100), no una cadena ni un valor fijo.
 2. Cada porcentaje debe ser una probabilidad inferida de forma independiente, basada en evidencia visual real de la foto (idioma, código de barras, logo, etc.), no en valores de ejemplo.
-3. bar[3] siempre China. No alteres la estructura JSON. El tip en español.`,
+3. Establece "confidence" en "LOW" si la foto NO muestra texto legible, código de barras, logo ni marca de origen — en ese caso mantén los porcentajes moderados (evita valores extremos como 85%) y menciona en el tip que no hay evidencia visible, que es solo una estimación aproximada.
+4. Establece "confidence" en "HIGH" solo si puedes señalar evidencia visible específica (texto, código de barras, logo, estilo de empaque) que justifique los números.
+5. bar[3] siempre China. No alteres la estructura JSON. El tip en español.`,
   },
   th: {
     label:"TH",
@@ -502,6 +525,7 @@ Reglas:
     resultTitle:"🔍 ผลการวิเคราะห์", resetBtn:"↩ สแกนสินค้าอื่น",
     usageInfo:"การสแกนฟรีวันนี้", remaining:"ครั้งที่เหลือ",
     nav1:"วิเคราะห์", nav2:"เกี่ยวกับ", langModalTitle:"เลือกภาษา",
+    lowConfidenceMsg:"⚠️ ไม่เห็นฉลากแหล่งกำเนิด บาร์โค้ด หรือข้อความที่ชัดเจนในภาพนี้ ผลลัพธ์นี้เป็นการคาดเดาคร่าวๆ ไม่ใช่การวิเคราะห์ที่เชื่อถือได้",
     country:"ไทย", neighbors:["เวียดนาม","มาเลเซีย"],
    prompt:`คุณคือเครื่องตรวจจับแหล่งกำเนิด AI วิเคราะห์บรรจุภัณฑ์ ฉลาก โลโก้แบรนด์ และลักษณะภายนอกในภาพสินค้า/อาหาร/ผัก/ผลไม้นี้ เพื่อประเมินความน่าจะเป็นของแหล่งกำเนิด
 
@@ -510,6 +534,7 @@ Reglas:
 ตอบเฉพาะ JSON ที่ถูกต้อง ไม่ต้องมี markdown หรือคำอธิบาย:
 {
   "product": "ชื่อสินค้าหรือประเภทอาหารที่ตรวจพบในภาพ",
+  "confidence": "HIGH หรือ LOW",
   "bars": [
     {"flag":"TH","country":"ไทย","label":"ประเทศบ้านเกิด","pct": ตัวเลขความน่าจะเป็นที่วิเคราะห์จริง},
     {"flag":"VN","country":"เวียดนาม","label":"เพื่อนบ้าน 1","pct": ตัวเลขความน่าจะเป็นที่วิเคราะห์จริง},
@@ -521,7 +546,9 @@ Reglas:
 กฎ:
 1. 'pct' ต้องเป็นตัวเลขล้วน (0-100) ไม่ใช่ข้อความหรือค่าคงที่
 2. เปอร์เซ็นต์แต่ละประเทศต้องเป็นความน่าจะเป็นที่อนุมานอย่างอิสระจากหลักฐานภาพจริง (ภาษา บาร์โค้ด โลโก้ ฯลฯ) ห้ามใช้ตัวเลขตัวอย่าง
-3. bar[3] คือจีนเสมอ ห้ามเปลี่ยนโครงสร้าง JSON tip เป็นภาษาไทย`,
+3. ตั้งค่า "confidence" เป็น "LOW" หากภาพไม่มีข้อความที่อ่านได้ บาร์โค้ด โลโก้ หรือเครื่องหมายแหล่งกำเนิดเลย — ในกรณีนี้ให้เปอร์เซ็นต์อยู่ในระดับปานกลาง (หลีกเลี่ยงค่าสุดขั้วเช่น 85%) และระบุใน tip ว่าไม่มีหลักฐานชัดเจน เป็นเพียงการคาดเดาคร่าวๆ
+4. ตั้งค่า "confidence" เป็น "HIGH" เฉพาะเมื่อสามารถชี้หลักฐานที่มองเห็นได้ชัดเจน (ข้อความ บาร์โค้ด โลโก้ รูปแบบบรรจุภัณฑ์) ที่สนับสนุนตัวเลขได้
+5. bar[3] คือจีนเสมอ ห้ามเปลี่ยนโครงสร้าง JSON tip เป็นภาษาไทย`,
   },
   zh: {
     label:"ZH",
@@ -534,6 +561,7 @@ Reglas:
     resultTitle:"🔍 产地分析结果", resetBtn:"↩ 扫描其他商品",
     usageInfo:"今日免费扫描", remaining:"次剩余",
     nav1:"分析", nav2:"关于", langModalTitle:"选择语言",
+    lowConfidenceMsg:"⚠️ 此照片中未见清晰的产地标签、条形码或文字。此结果仅为粗略推测，并非可靠分析。",
     country:"中国", neighbors:["韩国","日本"],
    prompt:`你是AI原产地检测器。请分析这张商品/食品/蔬菜/水果照片中的包装、标签、品牌标志和外观特征，以推断生产原产地的概率。
 
@@ -542,6 +570,7 @@ Reglas:
 仅返回有效的JSON，不要markdown或说明文字：
 {
   "product": "照片中检测到的具体商品名称或食品种类",
+  "confidence": "HIGH 或 LOW",
   "bars": [
     {"flag":"CN","country":"中国","label":"本国","pct": 实际分析得出的概率数值},
     {"flag":"KR","country":"韩国","label":"邻国1","pct": 实际分析得出的概率数值},
@@ -553,7 +582,9 @@ Reglas:
 规则：
 1. 'pct' 必须是纯数字（0-100），不能是字符串或固定值。
 2. 每个国家的百分比必须根据照片中的实际视觉证据（语言、条形码、标志等）独立推断，不要使用示例数字。
-3. bar[3]始终为中国。不要破坏JSON结构。tip用中文。`
+3. 如果照片中完全看不到可读文字、条形码、标志或产地标记，将"confidence"设为"LOW"，此时百分比应保持适中（避免85%这样的极端值），并在tip中说明没有明显证据，这只是粗略推测。
+4. 只有当能指出具体可见证据（文字、条形码、标志、包装风格等）来支持数值时，才将"confidence"设为"HIGH"。
+5. bar[3]始终为中国。不要破坏JSON结构。tip用中文。`
   }
 };
 
@@ -736,6 +767,14 @@ function showResult(data) {
   document.getElementById('resultProduct').textContent = data.product || '';
   document.getElementById('tipText').textContent = data.tip || '';
 
+  const badge = document.getElementById('lowConfBadge');
+  if ((data.confidence || '').toUpperCase() === 'LOW') {
+    document.getElementById('lowConfText').textContent = (LANG[currentLang] && LANG[currentLang].lowConfidenceMsg) || '';
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+
   const barsEl = document.getElementById('originBars');
   barsEl.innerHTML = '';
   const colors = ['c1','c2','c3','c4'];
@@ -776,6 +815,7 @@ function resetApp() {
   document.getElementById('analyzeBtn').style.display = 'none';
   document.getElementById('resultDiv').style.display = 'none';
   document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('lowConfBadge').classList.remove('show');
   document.getElementById('limitMsg').style.display = 'none';
 }
 
